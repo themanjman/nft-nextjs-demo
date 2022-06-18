@@ -25,10 +25,11 @@ export default function Home() {
 
   useEffect(() => {
     const fetchNFT = async () => {
-      //const res = await fetch('https://api.spoonacular.com/recipes/random?apiKey=b2145323616b4d33abd32937928953af&number=1')
-      const res = await fetch('https://api.opensea.io/api/v1/assets?format=json');
+      //const res = await fetch(`https://api.spoonacular.com/recipes/random?apiKey=${process.env.NEXT_PUBLIC_API_KEY}&number=1`)
+      const res = await fetch("https://api.opensea.io/api/v1/assets?format=json");
       const data = await res.json();
       setNFT(data.assets);
+      console.log(data.assets);
     }
     
     fetchNFT();
@@ -46,10 +47,10 @@ export default function Home() {
       <main className={styles.main}>
         <div className='grid grid-cols-1'>
           <div className={styles.cardContainer}>
-          {nft?.map(item => { return(
+          {nft?.filter(item => item.name !== null && item.image_url !== null).map(item => { console.log(item); return(
               <TinderCard className={styles.swipe} key={item?.id} onSwipe={(dir) => swiped(dir, item?.name)} onCardLeftScreen={() => outOfFrame(item?.name)}>
                 <div style={{ background: '-webkit-linear-gradient(rgba(29, 38, 113, 0.8), rgba(195, 55, 100, 0.6)), url(' + item?.image_url + ')'  }} className={styles.card}>
-                  <h3>{item?.name}</h3>
+                  <h3>{item?.name} ({item.id})</h3>
                 </div>
               </TinderCard>
           )
