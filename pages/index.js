@@ -1,8 +1,40 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import React, { useState,useEffect } from 'react'
+import TinderCard from 'react-tinder-card'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 export default function Home() {
+  const [nft,setNFT] = useState([]); 
+  const [lastDirection, setLastDirection] = useState()
+
+ 
+
+  const swiped = (direction, nameToDelete) => {
+    console.log('removing: ' + nameToDelete)
+    setLastDirection(direction)
+  }
+
+  const outOfFrame = (name) => {
+    console.log(name + ' left the screen!')
+  }
+
+
+
+  useEffect(() => {
+    const fetchNFT = async () => {
+      //const res = await fetch('https://api.spoonacular.com/recipes/random?apiKey=b2145323616b4d33abd32937928953af&number=1')
+      const res = await fetch('https://api.opensea.io/api/v1/assets?format=json');
+      const data = await res.json();
+      setNFT(data.assets);
+    }
+    
+    fetchNFT();
+  }, [])
+
+
   return (
     <div className={styles.container}>
       <Head>
@@ -12,43 +44,23 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        <div className='grid grid-cols-1'>
+          <div className={styles.cardContainer}>
+          {nft?.map(item => { return(
+              <TinderCard className={styles.swipe} key={item?.id} onSwipe={(dir) => swiped(dir, item?.name)} onCardLeftScreen={() => outOfFrame(item?.name)}>
+                <div style={{ background: '-webkit-linear-gradient(rgba(29, 38, 113, 0.8), rgba(195, 55, 100, 0.6)), url(' + item?.image_url + ')'  }} className={styles.card}>
+                  <h3>{item?.name}</h3>
+                </div>
+              </TinderCard>
+          )
+          })}
+        </div>
+        
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+        <div className='bg-gray'>
+        <FontAwesomeIcon icon={faTimes} className='' />
+        </div>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
         </div>
       </main>
 
