@@ -4,21 +4,23 @@ import styles from '../styles/Home.module.css'
 import React, { useState,useEffect } from 'react'
 import TinderCard from 'react-tinder-card'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faHeart, faInfoCircle, faTimes } from '@fortawesome/free-solid-svg-icons'
 
 export default function Home() {
   const [nft,setNFT] = useState([]); 
-  const [lastDirection, setLastDirection] = useState()
+  const [lastDirection, setLastDirection] = useState("");
 
  
 
   const swiped = (direction, nameToDelete) => {
     console.log('removing: ' + nameToDelete)
     setLastDirection(direction)
+   
   }
 
   const outOfFrame = (name) => {
     console.log(name + ' left the screen!')
+    console.log('direction is ' + lastDirection);
   }
 
 
@@ -29,12 +31,18 @@ export default function Home() {
       const res = await fetch("https://api.opensea.io/api/v1/assets?format=json");
       const data = await res.json();
       setNFT(data.assets);
-      console.log(data.assets);
+      console.log(`lastDirection is ${lastDirection}`);
     }
     
     fetchNFT();
   }, [])
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLastDirection("");
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [lastDirection])
 
   return (
     <div className={styles.container}>
@@ -47,7 +55,7 @@ export default function Home() {
       <main className={styles.main}>
         <div className='grid grid-cols-1'>
           <div className={styles.cardContainer}>
-          {nft?.filter(item => item.name !== null && item.image_url !== null).map(item => { console.log(item); return(
+          {nft?.filter(item => item.name !== null && item.image_url !== null).map(item => { return(
               <TinderCard className={styles.swipe} key={item?.id} onSwipe={(dir) => swiped(dir, item?.name)} onCardLeftScreen={() => outOfFrame(item?.name)}>
                 <div style={{ background: '-webkit-linear-gradient(rgba(29, 38, 113, 0.8), rgba(195, 55, 100, 0.6)), url(' + item?.image_url + ')'  }} className={styles.card}>
                   <h3>{item?.name} ({item.id})</h3>
@@ -57,9 +65,20 @@ export default function Home() {
           })}
         </div>
         
+        <div className='grid grid-cols-3 text-center mt-4 m-auto'>
+          <div className='bg-gray-200 p-2 rounded-full flex flex-col  justify-center'>
+            <FontAwesomeIcon icon={faTimes} className='bg-gray-100 p-6 rounded-full text-red-500 text-2xl' />
+          </div>
 
-        <div className='bg-gray'>
-        <FontAwesomeIcon icon={faTimes} className='' />
+          <div className='flex flex-col justify-center text-center items-center'>
+            <div className=' bg-gray-200 p-2 rounded-full flex items-center text-center'>
+              <FontAwesomeIcon icon={faInfoCircle} className='bg-gray-100 text-blue-500 text-xl p-2 rounded-full' />
+            </div>
+          </div>
+
+          <div className='bg-gray-200 p-2 rounded-full flex flex-col  justify-center'>
+            <FontAwesomeIcon icon={faHeart} className='bg-gray-100 p-6 rounded-full text-green-500 text-2xl' />
+          </div>
         </div>
 
         </div>
@@ -77,6 +96,12 @@ export default function Home() {
           </span>
         </a>
       </footer>
+
+      <div className={`h-screen bg-black w-full absolute inset-0 opacity-70 flex flex-col justify-center items-center align-center ${lastDirection == "" ? "hidden" : "block"} ${lastDirection == "right" ? "bg-green-500" : "bg-red-500"}`}>
+        <h1 className="font-bold text-center text-6xl mt-4 text-white">
+          {lastDirection == "right" ? "Like" : "Dislike"}
+        </h1>
+      </div>
     </div>
   )
 }
